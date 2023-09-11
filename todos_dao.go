@@ -10,6 +10,7 @@ type TodoDao interface {
 	Create(todo *Todo) error
 	Update(todo *Todo) error
 	Delete(id string) error
+	Done(id string) error
 }
 
 type TodoDaoImpl struct {
@@ -66,6 +67,14 @@ func (dao *TodoDaoImpl) Update(todo *Todo) error {
 
 func (dao *TodoDaoImpl) Delete(id string) error {
 	_, err := dao.conn.Exec("DELETE FROM todos WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dao *TodoDaoImpl) Done(id string) error {
+	_, err := dao.conn.Exec("UPDATE todos SET completed = true, updated_at = now() WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
