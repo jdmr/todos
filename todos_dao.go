@@ -11,6 +11,7 @@ type TodoDao interface {
 	Update(todo *Todo) error
 	Delete(id string) error
 	Done(id string) error
+	GetOwners() ([]*Owner, error)
 }
 
 type TodoDaoImpl struct {
@@ -22,7 +23,19 @@ func NewTodoDao(conn *sql.DB) TodoDao {
 }
 
 func (dao *TodoDaoImpl) GetAll() ([]*Todo, error) {
-	rows, err := dao.conn.Query("SELECT id, title, completed, created_at, updated_at FROM todos")
+	rows, err := dao.conn.Query(`
+		SELECT 
+			t.id
+			, t.title
+			, t.completed
+			, t.created_at
+			, t.updated_at
+			, o.id
+			, o.name
+		FROM todos t
+		JOIN owners o ON t.owner_id = o.id
+		order by t.created_at desc
+	`)
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +43,10 @@ func (dao *TodoDaoImpl) GetAll() ([]*Todo, error) {
 
 	todos := []*Todo{}
 	for rows.Next() {
-		todo := &Todo{}
-		err := rows.Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
+		todo := &Todo{
+			Owner: &Owner{},
+		}
+		err := rows.Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt, &todo.Owner.ID, &todo.Owner.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -41,8 +56,22 @@ func (dao *TodoDaoImpl) GetAll() ([]*Todo, error) {
 }
 
 func (dao *TodoDaoImpl) Get(id string) (*Todo, error) {
-	todo := &Todo{}
-	err := dao.conn.QueryRow("SELECT id, title, completed, created_at, updated_at FROM todos WHERE id = $1", id).Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
+	todo := &Todo{
+		Owner: &Owner{},
+	}
+	err := dao.conn.QueryRow(`
+		SELECT 
+			t.id
+			, t.title
+			, t.completed
+			, t.created_at
+			, t.updated_at
+			, o.id
+			, o.name
+		FROM todos t
+		JOIN owners o ON t.owner_id = o.id
+		WHERE t.id = $1
+	`, id).Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt, &todo.Owner.ID, &todo.Owner.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +79,7 @@ func (dao *TodoDaoImpl) Get(id string) (*Todo, error) {
 }
 
 func (dao *TodoDaoImpl) Create(todo *Todo) error {
-	_, err := dao.conn.Exec("INSERT INTO todos (id, title, completed, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)", todo.ID, todo.Title, todo.Completed, todo.CreatedAt, todo.UpdatedAt)
+	_, err := dao.conn.Exec("INSERT INTO todos (id, title, completed, created_at, updated_at, owner_id) VALUES ($1, $2, $3, NOW(), NOW(), $4)", todo.ID, todo.Title, todo.Completed, todo.Owner.ID)
 	if err != nil {
 		return err
 	}
@@ -79,4 +108,23 @@ func (dao *TodoDaoImpl) Done(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (dao *TodoDaoImpl) GetOwners() ([]*Owner, error) {
+	rows, err := dao.conn.Query("SELECT id, name FROM owners")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	owners := []*Owner{}
+	for rows.Next() {
+		owner := &Owner{}
+		err := rows.Scan(&owner.ID, &owner.Name)
+		if err != nil {
+			return nil, err
+		}
+		owners = append(owners, owner)
+	}
+	return owners, nil
 }

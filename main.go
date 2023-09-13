@@ -35,7 +35,7 @@ func main() {
 			}
 			for _, todo := range todos {
 				log.Println("********************************")
-				log.Printf("%s\t%s\t%t\n", todo.ID, todo.Title, todo.Completed)
+				log.Printf("%s\t%s\t%t\t%s(%s)\n", todo.ID, todo.Title, todo.Completed, todo.Owner.Name, todo.Owner.ID)
 			}
 		case "create":
 			log.Println("Enter todo title:")
@@ -43,8 +43,20 @@ func main() {
 			title := scanner.Text()
 			id := uuid.New().String()
 			id = id[:3]
-			todo := &Todo{ID: id, Title: title}
-			err := dao.Create(todo)
+			todo := &Todo{ID: id, Title: title, Owner: &Owner{}}
+			log.Println("List of owners:")
+			owners, err := dao.GetOwners()
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, owner := range owners {
+				log.Printf("%s\t%s\n", owner.ID, owner.Name)
+			}
+			log.Print("Enter todo owner id: ")
+			scanner.Scan()
+			todo.Owner.ID = scanner.Text()
+
+			err = dao.Create(todo)
 			if err != nil {
 				log.Fatal(err)
 			}
