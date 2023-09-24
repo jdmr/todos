@@ -12,17 +12,18 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-func TestGetAll(t *testing.T) {
-	t.Log("Testing GetAll")
+func TestPGGetAll(t *testing.T) {
+	t.Log("Testing Postgres GetAll")
 	conn, err := sql.Open("pgx", "postgres://todos:T0d05!@localhost:5432/todos?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
 
-	conn.Exec("insert into todos (id, title, completed, created_at, updated_at) values ('test', 'test', false, now(), now())")
+	conn.Exec("insert into owners (id, name) values ('test', 'test')")
+	conn.Exec("insert into todos (id, title, completed, created_at, updated_at, owner_id) values ('test', 'test', false, now(), now(), 'test')")
 
-	dao := NewTodoDao(conn)
+	dao := NewPGTodoDao(conn)
 	todos, err := dao.GetAll()
 	if err != nil {
 		cleanup(conn)
@@ -37,17 +38,18 @@ func TestGetAll(t *testing.T) {
 	cleanup(conn)
 }
 
-func TestGet(t *testing.T) {
-	t.Log("Testing Get")
+func TestPGGet(t *testing.T) {
+	t.Log("Testing Postgres Get")
 	conn, err := sql.Open("pgx", "postgres://todos:T0d05!@localhost:5432/todos?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
 
-	conn.QueryRow("insert into todos (id, title, completed, created_at, updated_at) values ('test', 'test', false, now(), now())")
+	conn.Exec("insert into owners (id, name) values ('test', 'test')")
+	conn.Exec("insert into todos (id, title, completed, created_at, updated_at, owner_id) values ('test', 'test', false, now(), now(), 'test')")
 
-	dao := NewTodoDao(conn)
+	dao := NewPGTodoDao(conn)
 	todo, err := dao.Get("test")
 	if err != nil {
 		cleanup(conn)
@@ -67,16 +69,18 @@ func TestGet(t *testing.T) {
 	cleanup(conn)
 }
 
-func TestCreate(t *testing.T) {
-	t.Logf("Testing Create")
+func TestPGCreate(t *testing.T) {
+	t.Logf("Testing Postgres Create")
 	conn, err := sql.Open("pgx", "postgres://todos:T0d05!@localhost:5432/todos?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
 
-	dao := NewTodoDao(conn)
-	todo := &Todo{ID: "test", Title: "test"}
+	conn.Exec("insert into owners (id, name) values ('test', 'test')")
+
+	dao := NewPGTodoDao(conn)
+	todo := &Todo{ID: "test", Title: "test", Completed: false, Owner: &Owner{ID: "test"}}
 	err = dao.Create(todo)
 	if err != nil {
 		cleanup(conn)
@@ -86,17 +90,18 @@ func TestCreate(t *testing.T) {
 	cleanup(conn)
 }
 
-func TestUpdate(t *testing.T) {
-	t.Logf("Testing Update")
+func TestPGUpdate(t *testing.T) {
+	t.Logf("Testing Postgres Update")
 	conn, err := sql.Open("pgx", "postgres://todos:T0d05!@localhost:5432/todos?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
 
-	conn.Exec("insert into todos (id, title, completed, created_at, updated_at) values ('test', 'test', false, now(), now())")
+	conn.Exec("insert into owners (id, name) values ('test', 'test')")
+	conn.Exec("insert into todos (id, title, completed, created_at, updated_at, owner_id) values ('test', 'test', false, now(), now(), 'test')")
 
-	dao := NewTodoDao(conn)
+	dao := NewPGTodoDao(conn)
 	todo := &Todo{ID: "test", Title: "test", Completed: true}
 	err = dao.Update(todo)
 	if err != nil {
@@ -107,17 +112,18 @@ func TestUpdate(t *testing.T) {
 	cleanup(conn)
 }
 
-func TestDelete(t *testing.T) {
-	t.Logf("Testing Delete")
+func TestPGDelete(t *testing.T) {
+	t.Logf("Testing Postgres Delete")
 	conn, err := sql.Open("pgx", "postgres://todos:T0d05!@localhost:5432/todos?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
 
-	conn.Exec("insert into todos (id, title, completed, created_at, updated_at) values ('test', 'test', false, now(), now())")
+	conn.Exec("insert into owners (id, name) values ('test', 'test')")
+	conn.Exec("insert into todos (id, title, completed, created_at, updated_at, owner_id) values ('test', 'test', false, now(), now(), 'test')")
 
-	dao := NewTodoDao(conn)
+	dao := NewPGTodoDao(conn)
 	err = dao.Delete("test")
 	if err != nil {
 		cleanup(conn)
@@ -128,5 +134,5 @@ func TestDelete(t *testing.T) {
 }
 
 func cleanup(conn *sql.DB) {
-	conn.Exec("delete from todos where title like 'test%'")
+	conn.Exec("delete from owners where name like 'test%'")
 }

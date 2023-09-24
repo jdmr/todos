@@ -7,8 +7,6 @@ import (
 	"os"
 
 	"github.com/google/uuid"
-
-	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
@@ -19,7 +17,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	dao := NewTodoDao(conn)
+	dao := NewPGTodoDao(conn)
 	scanner := bufio.NewScanner(os.Stdin)
 	log.Println("Welcome to Todo CLI")
 	log.Println("Enter command:")
