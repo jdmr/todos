@@ -44,7 +44,7 @@ func (dao *OwnerDaoMgImpl) Get(id string) (*Owner, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	return owner, nil
 }
 
 func (dao *OwnerDaoMgImpl) Create(owner *Owner) error {
