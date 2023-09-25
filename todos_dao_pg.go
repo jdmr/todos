@@ -101,22 +101,3 @@ func (dao *TodoDaoPGImpl) Done(id string) error {
 	}
 	return nil
 }
-
-func (dao *TodoDaoPGImpl) GetOwners() ([]*Owner, error) {
-	rows, err := dao.conn.Query("SELECT id, name FROM owners")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	owners := []*Owner{}
-	for rows.Next() {
-		owner := &Owner{}
-		err := rows.Scan(&owner.ID, &owner.Name)
-		if err != nil {
-			return nil, err
-		}
-		owners = append(owners, owner)
-	}
-	return owners, nil
-}

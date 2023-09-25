@@ -7,5 +7,4 @@ type TodoDao interface {
 	Update(todo *Todo) error
 	Delete(id string) error
 	Done(id string) error
-	GetOwners() ([]*Owner, error)
 }
