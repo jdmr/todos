@@ -23,9 +23,9 @@ func TestMGGetAll(t *testing.T) {
 	}
 	defer client.Disconnect(ctx)
 
-	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"id": "test", "name": "test"})
+	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"_id": "test", "name": "test"})
 	client.Database("todos").Collection("todos").InsertOne(ctx, map[string]interface{}{
-		"id":         "test",
+		"_id":        "test",
 		"title":      "test",
 		"completed":  false,
 		"created_at": time.Now(),
@@ -56,9 +56,9 @@ func TestMGGet(t *testing.T) {
 	}
 	defer client.Disconnect(ctx)
 
-	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"id": "test", "name": "test"})
+	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"_id": "test", "name": "test"})
 	client.Database("todos").Collection("todos").InsertOne(ctx, map[string]interface{}{
-		"id":         "test",
+		"_id":        "test",
 		"title":      "test",
 		"completed":  false,
 		"created_at": time.Now(),
@@ -95,7 +95,7 @@ func TestMGCreate(t *testing.T) {
 	}
 	defer client.Disconnect(ctx)
 
-	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"id": "test", "name": "test"})
+	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"_id": "test", "name": "test"})
 
 	dao := NewMongoTodoDao(client)
 	todo := &Todo{ID: "test", Title: "test", Owner: &Owner{ID: "test"}}
@@ -117,9 +117,9 @@ func TestMGUpdate(t *testing.T) {
 	}
 	defer client.Disconnect(ctx)
 
-	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"id": "test", "name": "test"})
+	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"_id": "test", "name": "test"})
 	client.Database("todos").Collection("todos").InsertOne(ctx, map[string]interface{}{
-		"id":         "test",
+		"_id":        "test",
 		"title":      "test",
 		"completed":  false,
 		"created_at": time.Now(),
@@ -147,9 +147,9 @@ func TestMGDelete(t *testing.T) {
 	}
 	defer client.Disconnect(ctx)
 
-	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"id": "test", "name": "test"})
+	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"_id": "test", "name": "test"})
 	client.Database("todos").Collection("todos").InsertOne(ctx, map[string]interface{}{
-		"id":         "test",
+		"_id":        "test",
 		"title":      "test",
 		"completed":  false,
 		"created_at": time.Now(),
@@ -176,9 +176,9 @@ func TestMGDone(t *testing.T) {
 	}
 	defer client.Disconnect(ctx)
 
-	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"id": "test", "name": "test"})
+	client.Database("todos").Collection("owners").InsertOne(ctx, map[string]string{"_id": "test", "name": "test"})
 	client.Database("todos").Collection("todos").InsertOne(ctx, map[string]interface{}{
-		"id":         "test",
+		"_id":        "test",
 		"title":      "test",
 		"completed":  false,
 		"created_at": time.Now(),
@@ -194,7 +194,7 @@ func TestMGDone(t *testing.T) {
 	}
 
 	todo := &Todo{}
-	client.Database("todos").Collection("todos").FindOne(ctx, map[string]string{"id": "test"}).Decode(todo)
+	client.Database("todos").Collection("todos").FindOne(ctx, map[string]string{"_id": "test"}).Decode(todo)
 	if !todo.Completed {
 		cleanupMongo(client)
 		t.Fatal("expected todo to be completed")
@@ -205,6 +205,6 @@ func TestMGDone(t *testing.T) {
 
 func cleanupMongo(client *mongo.Client) {
 	ctx := context.Background()
-	client.Database("todos").Collection("todos").DeleteMany(ctx, map[string]string{"id": "test"})
-	client.Database("todos").Collection("owners").DeleteMany(ctx, map[string]string{"id": "test"})
+	client.Database("todos").Collection("todos").DeleteMany(ctx, map[string]string{"_id": "test"})
+	client.Database("todos").Collection("owners").DeleteMany(ctx, map[string]string{"_id": "test"})
 }

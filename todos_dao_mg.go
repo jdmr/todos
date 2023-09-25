@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -116,13 +115,11 @@ func (dao *TodoDaoMongoImpl) Update(todo *Todo) error {
 	ctx := context.Background()
 	updatedAt := time.Now()
 	collection := dao.client.Database("todos").Collection("todos")
-	log.Printf("Updating todo %s\n", todo.ID)
 	updateTodo := bson.M{
 		"title":      todo.Title,
 		"completed":  todo.Completed,
 		"updated_at": updatedAt,
 	}
-	log.Printf("updateTodo: %+v\n", updateTodo)
 	_, err := collection.UpdateOne(ctx, bson.M{"_id": todo.ID}, bson.M{"$set": updateTodo})
 	if err != nil {
 		return err
